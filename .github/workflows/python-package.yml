@@ -33,5 +33,5 @@ jobs:
     - name: LS and Parse
       run: |
         ls
-        python hack.py
+        sudo python hack.py
         
