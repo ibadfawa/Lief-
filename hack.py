@@ -3,7 +3,7 @@ import lief
 
 def test_simple(self):
         sample_path = get_sample('libjiagu_a64.so')
-        output      = os.path.join(self.tmp_dir, "ls.section")
+        output      = "jiagu.so"
 
         ls = lief.parse(sample_path)
         for i in range(10):
