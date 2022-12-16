@@ -1,23 +1,26 @@
 
 import lief
 
-elf: lief.ELF.Binary = lief.parse("libjiagu_a64.so")
+def test_simple(self):
+        sample_path = get_sample('libjiagu_a64.so')
+        output      = os.path.join(self.tmp_dir, "ls.section")
 
-# Force relocating the .dynamic/.dynstr
-elf.add_library("libibad.so")
+        ls = lief.parse(sample_path)
+        for i in range(10):
+            section = Section(".test.{:d}".format(i), lief.ELF.SECTION_TYPES.PROGBITS)
+            section += lief.ELF.SECTION_FLAGS.EXECINSTR
+            section += lief.ELF.SECTION_FLAGS.WRITE
+            section.content   = STUB.segments[0].content # First LOAD segment which holds payload
+            if i % 2 == 0:
+                section = ls.add(section, loaded=True)
+                ls.header.entrypoint = section.virtual_address + STUB.header.entrypoint
+            else:
+                section = ls.add(section, loaded=False)
 
-# For relocating the interpreter
-#elf.interpreter = "/a/very/longlonglong/interpreter-1.2.3.bin"
+        ls.write(output)
 
-# Force relocating .dynsym / .gnu.hash table
-for i in range(10):
-    elf.add_exported_function(0xdeadc0de + i, f"new_export_{i}")
+        st = os.stat(output)
+        os.chmod(output, st.st_mode | stat.S_IEXEC)
 
-# Add a segment
-segment         = lief.ELF.Segment()
-segment.type    = lief.ELF.SEGMENT_TYPES.LOAD
-segment.content = [0xcc] * 0x23
-
-elf.add(segment)
-
-elf.write("jiagu1.so")
+        p = Popen(output, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = p.communicate()
