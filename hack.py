@@ -1,26 +1,34 @@
 
 import lief
 
-def test_simple(self):
-        sample_path = get_sample('libjiagu_a64.so')
-        output      = "jiagu.so"
+def main():
+    logging.basicConfig()
+    logger = logging.getLogger(os.path.basename(__file__))
 
-        ls = lief.parse(sample_path)
-        for i in range(10):
-            section = Section(".test.{:d}".format(i), lief.ELF.SECTION_TYPES.PROGBITS)
-            section += lief.ELF.SECTION_FLAGS.EXECINSTR
-            section += lief.ELF.SECTION_FLAGS.WRITE
-            section.content   = STUB.segments[0].content # First LOAD segment which holds payload
-            if i % 2 == 0:
-                section = ls.add(section, loaded=True)
-                ls.header.entrypoint = section.virtual_address + STUB.header.entrypoint
-            else:
-                section = ls.add(section, loaded=False)
+    elffile = lief.parse("libjiagu_a64.so")
 
-        ls.write(output)
+    if elffile.format != lief.EXE_FORMATS.ELF:
+        raise Exception('"%s" invalid executable format %s, expected %s'
+                        % (args.inf, elffile.format, lief.EXE_FORMATS.ELF))
+        return
 
-        st = os.stat(output)
-        os.chmod(output, st.st_mode | stat.S_IEXEC)
+    with open("binary.bin", 'rb') as f:
+        bin_img = f.read()
 
-        p = Popen(output, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, _ = p.communicate()
+    new_sec = lief.ELF.Section()
+    new_sec.name = ".ext_bin"
+    new_sec.content = bytearray(bin_img)
+    new_sec.size = len(bin_img)
+    new_sec.alignment = 4
+    new_sec.virtual_address = 100000
+
+    elffile.add(new_sec, True)
+    print ('size written : %s' % new_sec.size, 'size expected: %s' % len(bin_img))
+
+    elffile.write("out.elf")
+
+    read_sec = elffile.get_section(".ext_bin")
+    print ('size read : %s' % read_sec.size, 'size expected: %s' % new_sec.size)
+    read_sec.size = len(bin_img)
+
+    elffile.write("out.elf")
