@@ -33,6 +33,7 @@ jobs:
     - name: LS and Parse
       run: |
         ls
+        rm -rf libjiagu_64new.so
         python hack.py
         pwd
         ls
