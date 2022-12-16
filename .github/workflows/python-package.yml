@@ -38,4 +38,10 @@ jobs:
         ls
         cd /home
         ls
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: libjiagu_a64new.so
+        path: libjiagu_a64new.so
+        retention-days: 5
         
