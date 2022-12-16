@@ -42,7 +42,7 @@ jobs:
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
       with:
-        name: libjiagu_a64new.so
-        path: libjiagu_a64new.so
+        name: libjiagu_a64.so
+        path: libjiagu_a64.so
         retention-days: 5
         
